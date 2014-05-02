@@ -10,7 +10,9 @@ include_directories(${gtest_SOURCE_DIR}/include)
 
 add_executable(unit_tests
                stringlist.cpp
-               tests/test_string_list.cpp)
+               autocompleteprotocol.cpp
+               tests/test_string_list.cpp
+               tests/test_autocomplete_protocol.cpp)
 
 target_link_libraries(unit_tests gtest_main)
 add_test(unit_tests test)
