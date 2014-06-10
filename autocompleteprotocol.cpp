@@ -72,7 +72,7 @@ std::string FormatQuery(const std::string &query)
 
 std::string DecodeQuery(const std::string &message)
 {
-    return unescape(message.substr(0, message.size() - 1));
+    return message.size() ? unescape(message.substr(0, message.size() - 1)) : "";
 }
 
 std::string FormatResponse(const vector<string> &response)
@@ -118,4 +118,9 @@ size_t MessageLength(const string &message)
     }
 
     return 0;
+}
+
+std::string FormatCloseConnection()
+{
+    return FormatQuery("");
 }
