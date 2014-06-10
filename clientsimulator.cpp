@@ -60,6 +60,9 @@ int main(int argc, char *argv[]) {
             responseTime += duration_cast<milliseconds>(system_clock::now() - before).count();
         }
 
+        // Close connection
+        client.disconnect();
+
         cout.setf(ios::fixed);
         cout << (static_cast<double>(responseTime) / typedWord.size()) << '\n';
     }
