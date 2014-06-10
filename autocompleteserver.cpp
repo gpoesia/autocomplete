@@ -1,6 +1,7 @@
 #include <chrono>
 #include <functional>
 #include <thread>
+#include <iostream>
 
 #include "autocompleteserver.h"
 #include "autocompleteprotocol.h"
@@ -22,6 +23,8 @@ void HandleClient(ConnectionPeer peer, StringList &dictionary)
             std::this_thread::yield();
         }
 
+        std::chrono::system_clock::time_point before = std::chrono::system_clock::now();
+
         std::string message = peer.read(messageLength);
         std::string query = DecodeQuery(message);
 
@@ -31,6 +34,11 @@ void HandleClient(ConnectionPeer peer, StringList &dictionary)
             auto response = dictionary.possibleCompletions(query);
             peer.write(FormatResponse(response));
         }
+
+        std::cout << "S_A "
+                  << std::chrono::duration_cast<std::chrono::microseconds>(
+                        std::chrono::system_clock::now() - before).count()
+                  << '\n';
     } while (!closed);
 
     peer.close();

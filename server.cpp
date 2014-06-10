@@ -29,6 +29,8 @@ int main(int argc, char *argv[]) {
         stringList.addString(line);
     }
 
+    stringList.sort();
+
     AutocompleteServer server(stringList);
     server.run(port, maxClients);
 

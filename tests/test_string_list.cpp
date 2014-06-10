@@ -17,6 +17,8 @@ TEST(StringListTest, Autocompletion)
     sl.addString("yet another different test");
     sl.addString("total: many tests");
 
+    sl.sort();
+
     auto result = sl.possibleCompletions("t");
 
     vector<string> answer {"test", "tests", "test1", "test2", "total: many tests"};

@@ -1,6 +1,7 @@
 #include <thread>
 #include <vector>
 #include <chrono>
+#include <iostream>
 
 #include "loadbalancer.h"
 #include "autocompleteprotocol.h"
@@ -20,17 +21,31 @@ void HandleClient(ConnectionPeer clientPeer, ConnectionPeer serverPeer)
         while ((messageLength = MessageLength(clientPeer.peek())) == 0)
             std::this_thread::yield();
 
+        std::chrono::system_clock::time_point before = std::chrono::system_clock::now();
+
         std::string message = clientPeer.read(messageLength);
         serverPeer.write(message);
 
         close = (DecodeQuery(message).size() == 0);
 
+        std::cout << "S_LB "
+                  << std::chrono::duration_cast<std::chrono::microseconds>(
+                          std::chrono::system_clock::now() - before).count()
+                  << '\n';
+
         if (!close) {
             while ((messageLength = MessageLength(serverPeer.peek())) == 0)
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                std::this_thread::yield();
+
+            before = std::chrono::system_clock::now();
 
             message = serverPeer.read(messageLength);
             clientPeer.write(message);
+
+            std::cout << "S_LB "
+                      << std::chrono::duration_cast<std::chrono::microseconds>(
+                              std::chrono::system_clock::now() - before).count()
+                      << '\n';
         }
     }
 

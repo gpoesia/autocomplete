@@ -33,7 +33,7 @@ bool ConnectionPeer::connect(std::string serverHostName, int port)
 
     if (success) {
         int fdFlags = fcntl(socketFileDescriptor_, F_GETFL, 0);
-        fcntl(socketFileDescriptor_, F_SETFL, fdFlags | O_NONBLOCK);
+//        fcntl(socketFileDescriptor_, F_SETFL, fdFlags | O_NONBLOCK);
     }
 
     return success;
@@ -64,7 +64,7 @@ ConnectionPeer ConnectionPeer::acceptClient()
             nullptr, nullptr);
 
     int fdFlags = fcntl(socketToClientFileDescriptor, F_GETFL, 0);
-    fcntl(socketToClientFileDescriptor, F_SETFL, fdFlags | O_NONBLOCK);
+//    fcntl(socketToClientFileDescriptor, F_SETFL, fdFlags | O_NONBLOCK);
 
     ConnectionPeer peer;
     peer.socketFileDescriptor_ = socketToClientFileDescriptor;
@@ -88,14 +88,14 @@ std::string ConnectionPeer::peek()
     char buffer[BUFFER_SIZE];
     int read = 0;
 
-    do {
+//    do {
         read = recv(socketFileDescriptor_, buffer, BUFFER_SIZE - 1, 0);
 
         if (read >= 0) {
             buffer[read] = '\0';
             buffer_ += buffer;
         }
-    } while (read > 0);
+//    } while (read > 0);
 
     return buffer_;
 }
