@@ -1,6 +1,7 @@
 #include <chrono>
 #include <functional>
 #include <thread>
+#include <mutex>
 #include <iostream>
 
 #include "autocompleteserver.h"
@@ -12,7 +13,7 @@ AutocompleteServer::AutocompleteServer(const StringList &dictionary) :
 {
 }
 
-void HandleClient(ConnectionPeer peer, StringList &dictionary)
+void HandleClient(ConnectionPeer peer, StringList &dictionary, std::mutex &outputMutex)
 {
     size_t messageLength = 0;
 
@@ -35,10 +36,12 @@ void HandleClient(ConnectionPeer peer, StringList &dictionary)
             peer.write(FormatResponse(response));
         }
 
+        outputMutex.lock();
         std::cout << "S_A "
                   << std::chrono::duration_cast<std::chrono::microseconds>(
                         std::chrono::system_clock::now() - before).count()
                   << '\n';
+        outputMutex.unlock();
     } while (!closed);
 
     peer.close();
@@ -48,10 +51,12 @@ void AutocompleteServer::run(int port, int maxClients)
 {
     ConnectionPeer serverPeer;
     serverPeer.listen(port);
+    std::mutex outputMutex;
 
     while (maxClients--) {
         ConnectionPeer client = serverPeer.acceptClient();
-        auto clientThread = std::thread(HandleClient, client, std::ref(dictionary_));
+        auto clientThread = std::thread(HandleClient, client,
+                std::ref(dictionary_), std::ref(outputMutex));
         clientThread.detach();
     }
 }

@@ -12,7 +12,7 @@ LoadBalancer::LoadBalancer(const std::vector<std::pair<std::string, int>> &serve
 {
 }
 
-void HandleClient(ConnectionPeer clientPeer, ConnectionPeer serverPeer)
+void HandleClient(ConnectionPeer clientPeer, ConnectionPeer serverPeer, std::mutex &outputMutex)
 {
     bool close = false;
     size_t messageLength = 0;
@@ -28,10 +28,12 @@ void HandleClient(ConnectionPeer clientPeer, ConnectionPeer serverPeer)
 
         close = (DecodeQuery(message).size() == 0);
 
+        outputMutex.lock();
         std::cout << "S_LB "
                   << std::chrono::duration_cast<std::chrono::microseconds>(
                           std::chrono::system_clock::now() - before).count()
                   << '\n';
+        outputMutex.unlock();
 
         if (!close) {
             while ((messageLength = MessageLength(serverPeer.peek())) == 0)
@@ -42,10 +44,12 @@ void HandleClient(ConnectionPeer clientPeer, ConnectionPeer serverPeer)
             message = serverPeer.read(messageLength);
             clientPeer.write(message);
 
+            outputMutex.lock();
             std::cout << "S_LB "
                       << std::chrono::duration_cast<std::chrono::microseconds>(
                               std::chrono::system_clock::now() - before).count()
                       << '\n';
+            outputMutex.unlock();
         }
     }
 
@@ -56,6 +60,7 @@ void HandleClient(ConnectionPeer clientPeer, ConnectionPeer serverPeer)
 void LoadBalancer::run(int port, int maxClients)
 {
     ConnectionPeer loadBalancingServer;
+    std::mutex outputMutex;
 
     loadBalancingServer.listen(port);
 
@@ -66,7 +71,8 @@ void LoadBalancer::run(int port, int maxClients)
         nextServerConnection.connect(serverAddresses_[nextServer_].first,
                 serverAddresses_[nextServer_].second);
 
-        std::thread clientHandler(HandleClient, nextClient, nextServerConnection);
+        std::thread clientHandler(HandleClient, nextClient, nextServerConnection,
+                std::ref(outputMutex));
         clientHandler.detach();
 
         nextServer_ = (nextServer_ + 1) % serverAddresses_.size();
