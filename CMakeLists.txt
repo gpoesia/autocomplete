@@ -24,17 +24,14 @@ add_executable(client_simulator
                stringlist.cpp
                autocompleteprotocol.cpp
                connectionpeer.cpp
-               autocompleteclient.cpp
-               autocompleteserver.cpp
-               loadbalancer.cpp)
+               autocompleteclient.cpp)
 
 add_executable(loadbalancer
                loadbalancingserver.cpp
                stringlist.cpp
                autocompleteprotocol.cpp
                connectionpeer.cpp
-               loadbalancer.cpp
-               autocompleteserver.cpp)
+               loadbalancer.cpp)
 
 add_executable(server
                server.cpp
