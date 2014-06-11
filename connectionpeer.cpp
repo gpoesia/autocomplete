@@ -17,24 +17,33 @@ ConnectionPeer::ConnectionPeer() :
 
 bool ConnectionPeer::connect(std::string serverHostName, int port)
 {
-    hostent *server = gethostbyname(serverHostName.data());
+    addrinfo *serverAddrInfo;
+    addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_family = AF_INET;
+
+    std::string portAsString = std::to_string(port);
+
+    if (getaddrinfo(serverHostName.data(), portAsString.data(),
+                &hints, &serverAddrInfo) != 0)
+        return false;
+
     sockaddr_in serverAddress;
 
     socketFileDescriptor_ = socket(AF_INET, SOCK_STREAM, 0);
 
     memset(&serverAddress, 0, sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
-    memcpy(&serverAddress.sin_addr.s_addr, server->h_addr, server->h_length);
+    serverAddress.sin_addr.s_addr =
+            reinterpret_cast<sockaddr_in*>(serverAddrInfo->ai_addr)->sin_addr.s_addr;
     serverAddress.sin_port = htons(port);
+
+    freeaddrinfo(serverAddrInfo);
 
     bool success = ::connect(socketFileDescriptor_,
             reinterpret_cast<sockaddr*>(&serverAddress),
             sizeof serverAddress) == 0;
-
-    if (success) {
-        int fdFlags = fcntl(socketFileDescriptor_, F_GETFL, 0);
-//        fcntl(socketFileDescriptor_, F_SETFL, fdFlags | O_NONBLOCK);
-    }
 
     return success;
 }
@@ -62,9 +71,6 @@ ConnectionPeer ConnectionPeer::acceptClient()
 {
     int socketToClientFileDescriptor = accept(socketFileDescriptor_,
             nullptr, nullptr);
-
-    int fdFlags = fcntl(socketToClientFileDescriptor, F_GETFL, 0);
-//    fcntl(socketToClientFileDescriptor, F_SETFL, fdFlags | O_NONBLOCK);
 
     ConnectionPeer peer;
     peer.socketFileDescriptor_ = socketToClientFileDescriptor;
