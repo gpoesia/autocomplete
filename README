@@ -1,8 +1,6 @@
-Distributed Autocomplete Server
+Distributed Autocomplete Server with Load Balancing
 
-Projeto para a disciplina de Análise e Modelagem de Desempenho de Sistemas de 
-Computação do DCC-UFMG.
+Author: Gabriel Poesia
 
-Alunos:
-    - Gabriel Poesia Reis e Silva
-    - Henrique Jonas Barbosa Fonseca
+Class project for the Computer Systems Performance Analysis and Modeling
+course taken at UFMG (Federal University of Minas Gerais).
